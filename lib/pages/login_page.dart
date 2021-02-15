@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:quicktable/blocs/provider.dart';
 import 'package:quicktable/utils/api_laravel.dart';
+import 'package:quicktable/utils/preferenciasUsuario.dart';
 
 class LoginPage extends StatelessWidget {
   final ApiLaravel _apiLaravel = new ApiLaravel();
+  final _prefs = new PreferenciasUsuario();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -228,13 +230,36 @@ class LoginPage extends StatelessWidget {
     );
   }
 
-  _login(LoginBloc bloc, BuildContext context) {
+  _login(LoginBloc bloc, BuildContext context) async {
     //navegar a otro pagina
-    //_apiLaravel.loginAPI(bloc.email, bloc.password);
-    /*if (_apiLaravel.status) {
-      print("supuestamente aqui no funciono el login");
-    } else {*/
+    Map info = await _apiLaravel.loginAPI(bloc.email, bloc.password);
+
+    if (!info['ok']) {
+      _showAlert(context, info["mensaje"]);
+    } else {
+      print(_prefs.name);
+      print(_prefs.lastname);
+      print(_prefs.id);
+      print(_prefs.token);
       Navigator.pushReplacementNamed(context, 'home');
-    //}
+    }
+  }
+
+  _showAlert(BuildContext context, String msj) {
+    return showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text("Login"),
+          content: Text(msj),
+          actions: <Widget>[
+            FlatButton(
+              child: Text("OK"),
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+          ],
+        );
+      },
+    );
   }
 }

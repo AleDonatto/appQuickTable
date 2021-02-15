@@ -43,7 +43,7 @@ class Unidades {
         phone1: json["phone1"],
         phone2: json["phone2"],
         address: json["address"],
-        weSite: json["weSite"],
+        weSite: json["webSite"],
         nameContact: json["nameContact"],
         cancelationTimeLimit: json["cancelation_time_limit"],
         imagen: json["imagen"],
