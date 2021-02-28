@@ -23,15 +23,15 @@ class MenuDrawer extends StatelessWidget {
           ),
           ListTile(
             leading: Icon(Icons.list, color: Colors.blue),
-            title: Text("Mis reservaciones"),
+            title: Text("Mis Reservaciones"),
             onTap: () =>
                 Navigator.pushReplacementNamed(context, 'misreservaciones'),
           ),
           ListTile(
-            leading: Icon(Icons.settings, color: Colors.blue),
-            title: Text("Configuracion"),
-            onTap: (){},
-          ),
+              leading: Icon(Icons.settings, color: Colors.blue),
+              title: Text("Configuracion"),
+              onTap: () =>
+                  Navigator.pushReplacementNamed(context, 'configuraciones')),
           ListTile(
             leading: Icon(Icons.exit_to_app, color: Colors.blue),
             title: Text("Logout"),

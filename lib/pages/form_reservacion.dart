@@ -1,9 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:quicktable/models/mesas_model.dart';
 import 'package:quicktable/models/reservacion_model.dart';
 import 'package:quicktable/utils/api_laravel.dart';
 import 'package:quicktable/utils/arguments.dart';
+import 'package:quicktable/utils/preferenciasUsuario.dart';
 
 class FormReservaciones extends StatefulWidget {
   @override
@@ -23,6 +26,7 @@ class _FormReservacionesState extends State<FormReservaciones> {
   ApiLaravel _apiLaravel = new ApiLaravel();
   Reservacion _reservacion = new Reservacion();
   List<Mesas> _mesas = new List();
+  PreferenciasUsuario _prefs = new PreferenciasUsuario();
 
   TextEditingController _textEditingController = new TextEditingController();
   TextEditingController _textHora = new TextEditingController();
@@ -282,7 +286,7 @@ class _FormReservacionesState extends State<FormReservaciones> {
     if (!formKey.currentState.validate()) return;
 
     Reservacion resTem = new Reservacion();
-    List<Mesas> mesastem = new List<Mesas>();
+    List<Mesas> mesastem = new List();
 
     formKey.currentState.save();
 
@@ -303,26 +307,26 @@ class _FormReservacionesState extends State<FormReservaciones> {
 
   _submit() async {
     if (!formKey.currentState.validate()) return;
-    //print("pasado");
+
+    _reservacion.usuarioId = int.parse(_prefs.id);
+    _reservacion.unidad = _unidad;
     formKey.currentState.save();
-    print("fecha: ${_reservacion.fecha}");
-    print("hora: ${_reservacion.hora}");
-    print("pax: ${_reservacion.pax}");
-    print("mesa: ${_reservacion.mesa}");
+    String response;
 
-    //_guardando = true;
+    response = await _apiLaravel.createReservacion(_reservacion);
+    mostrarSnackbar(response);
 
-    setState(() {});
-
-    //_apiLaravel.createReservacion(_reservacion);
-
-    mostrarSnackbar("Reservacion Creada");
+    Timer _timer = new Timer(const Duration(milliseconds: 5500), () {
+      Navigator.pop(context);
+    });
   }
 
   mostrarSnackbar(String mensaje) {
     final snackbar = SnackBar(
-      content: Text(mensaje),
-      duration: Duration(milliseconds: 15000),
+      content: Text(
+        mensaje,
+      ),
+      duration: Duration(milliseconds: 5000),
     );
 
     scaffoldKey.currentState.showSnackBar(snackbar);

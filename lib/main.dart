@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:quicktable/blocs/provider.dart';
+import 'package:quicktable/pages/configuracion_user.dart';
 import 'package:quicktable/pages/form_edit_booking.dart';
 import 'package:quicktable/pages/form_reservacion.dart';
 import 'package:quicktable/pages/home_page.dart';
@@ -30,6 +31,7 @@ class MyApp extends StatelessWidget {
           'add_reservacion': (BuildContext context) => FormReservaciones(),
           'edit_reservacion': (BuildContext context) => FormEditBookin(),
           'misreservaciones': (BuildContext context) => MisReservaciones(),
+          'configuraciones': (BuildContext context) => ConfiguracionPage(),
         },
       ),
     );

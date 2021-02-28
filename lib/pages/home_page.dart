@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-//import 'package:quicktable/blocs/provider.dart';
-//import 'package:quicktable/models/reservacion_model.dart';
 import 'package:quicktable/models/unidades_model.dart';
 import 'package:quicktable/utils/api_laravel.dart';
 import 'package:quicktable/utils/arguments.dart';
@@ -132,39 +130,6 @@ class _HomePageState extends State<HomePage> {
 
   Widget _menuOptions() {
     return MenuDrawer();
-  }
-
-  Widget _listReservaciones(BuildContext context) {
-    return Center(
-      child: Card(
-        elevation: 10.0,
-        shape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.0)),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            ListTile(
-              title: Text('Hello'),
-              subtitle: Text('I like my bitch'),
-              leading: Icon(Icons.disc_full),
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: <Widget>[
-                FlatButton(
-                  onPressed: () {},
-                  child: Text('Cancelar'),
-                ),
-                FlatButton(
-                  onPressed: () {}, //_editReservacion(context),
-                  child: Text('Cambiar'),
-                )
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
   }
 
   Widget _listRestaurantes(BuildContext context) {
@@ -372,11 +337,11 @@ class _HomePageState extends State<HomePage> {
     );*/
   }
 
-  _createReservacion(BuildContext context) {
+  /*_createReservacion(BuildContext context) {
     Navigator.pushNamed(context, "add_reservacion");
   }
 
   _editReservacion(BuildContext context) {
     Navigator.pushNamed(context, "edit_reservacion");
-  }
+  }*/
 }

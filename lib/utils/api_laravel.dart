@@ -1,6 +1,7 @@
-import 'dart:convert' as convert;
+import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:quicktable/models/mesas_model.dart';
+import 'package:quicktable/models/reservacion_cliente.dart';
 import 'package:quicktable/models/reservacion_model.dart';
 import 'package:quicktable/models/unidades_model.dart';
 import 'package:quicktable/utils/preferenciasUsuario.dart';
@@ -22,7 +23,7 @@ class ApiLaravel {
         headers: {'Accept': 'application/json'},
         body: {"email": "$email", "password": "$password"});
 
-    var data = convert.jsonDecode(response.body);
+    var data = json.decode(response.body);
 
     if (data['status'] == 'invalid_credentials') {
       return {
@@ -55,31 +56,28 @@ class ApiLaravel {
 
   logoutAPI() async {}
 
-  Future<bool> createReservacion(Reservacion reservacion) async {
-    final url = "$_url/reservaciones";
-
-    final response = await http.post(url, body: reservacionToJson(reservacion));
-    final decodeData = convert.jsonDecode(response.body);
-
-    print(decodeData);
-    return true;
-  }
-
-  Future<List<Reservacion>> getAllReservaciones(int usuario) async {
-    final url = "$_url/getAllReservaciones/$usuario";
-    final List<Reservacion> reservaciones = new List();
+  Future<List<ReservacionCliente>> getAllReservaciones(int usuario) async {
+    final url = "$_url/getallreservacionesCliente/$usuario";
 
     final response = await http.get(url);
-    final Map<String, dynamic> decodeData = convert.jsonDecode(response.body);
+    final List decodeData = json.decode(response.body)["data"];
 
-    if (decodeData == null) return [];
+    if (response.statusCode != 200) {
+      throw Exception('Error getting tweets.');
+    }
+
+    return decodeData
+        .map((item) => new ReservacionCliente.fromJson(item))
+        .toList();
+
+    /*if (decodeData == null) return [];
 
     decodeData.forEach((key, value) {
-      final reservaciontem = Reservacion.fromJson(value);
+      final reservaciontem = ReservacionCliente.fromJson(value);
       reservaciones.add(reservaciontem);
     });
 
-    return reservaciones;
+    return reservaciones;*/
   }
 
   Future<List<Unidades>> getRestaurantes() async {
@@ -88,15 +86,13 @@ class ApiLaravel {
 
     final response = await http.get(url);
 
-    final decodeData = convert.jsonDecode(response.body);
+    final decodeData = json.decode(response.body);
 
     if (decodeData == null) return [];
 
-    int i = 0;
     decodeData.forEach((key, value) {
-      final unidadesTemp = Unidades.fromJson(value[i]);
+      final unidadesTemp = Unidades.fromJson(value[0]);
       unidades.add(unidadesTemp);
-      i++;
     });
 
     return unidades;
@@ -105,34 +101,33 @@ class ApiLaravel {
   Future<List<Mesas>> getMesas(Reservacion res) async {
     final url = "$_url/buscarMesas";
 
-    final List<Mesas> mesas = new List();
     final response = await http.post(url, body: {
       "fecha": "${res.fecha}",
       "hora": "${res.hora}",
       "businessUnit": "${res.unidad}"
     });
 
-    final decodeData = convert.jsonDecode(response.body);
-    print("solo decodedata: $decodeData");
-    print("solo decodedata con data pare ver: ${decodeData["data"]}");
+    final List decodeData = json.decode(response.body)["data"];
 
-    if (decodeData == null) return [];
-    int i = 0;
-    decodeData.forEach((key, value) {
+    if (response.statusCode != 200) {
+      throw Exception('Error getting tweets.');
+    }
+
+    return decodeData.map((item) => new Mesas.fromJson(item)).toList();
+
+    /*decodeData.forEach((key, value) {
       final mesastemp = Mesas.fromJson(value[0]);
-      //mesastemp.idTables = int.parse(key);
-      //i++;
       mesas.add(mesastemp);
-    });
+    });*/
 
-    return mesas;
+    //return mesas;
   }
 
   Future<int> cancelarRservacion(int id) async {
     final url = "$_url/cancelarReservacion/$id";
     final response = await http.put(url);
 
-    print(convert.jsonDecode(response.body));
+    //print(convert.jsonDecode(response.body));
 
     return 1;
   }
@@ -142,10 +137,39 @@ class ApiLaravel {
 
     final response = await http.put(url, body: reservacionToJson(reservacion));
 
-    final decedeData = convert.jsonDecode(response.body);
+    final decodeData = json.decode(response.body);
 
-    print(convert.jsonDecode(response.body));
+    print(decodeData);
 
-    return true;
+    if (response.statusCode == 200) {
+      return true;
+    }
+
+    return false;
+  }
+
+  Future<String> createReservacion(Reservacion reservacion) async {
+    final url = "$_url/createReservacion";
+
+    print(reservacionToJson(reservacion));
+
+    final response = await http.post(url, headers: {
+      'Accept': 'application/json'
+    }, body: {
+      "unidad": "${reservacion.unidad}",
+      "mesa": "${reservacion.mesa}",
+      "usuario_id": "${reservacion.usuarioId}",
+      "fecha": "${reservacion.fecha}",
+      "hora": "${reservacion.hora}",
+      "pax": "${reservacion.pax}",
+    });
+
+    final decodeData = json.decode(response.body);
+    print(decodeData);
+
+    if (response.statusCode == 200) {
+      return decodeData["message"].toString();
+    }
+    return decodeData["errors"].toString();
   }
 }
