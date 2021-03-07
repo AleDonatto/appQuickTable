@@ -123,29 +123,43 @@ class ApiLaravel {
     //return mesas;
   }
 
-  Future<int> cancelarRservacion(int id) async {
+  Future<String> cancelarReservacion(int id) async {
     final url = "$_url/cancelarReservacion/$id";
-    final response = await http.put(url);
-
-    //print(convert.jsonDecode(response.body));
-
-    return 1;
-  }
-
-  Future<bool> cambiarReservacion(Reservacion reservacion) async {
-    final url = "$_url/cambiarReservacion";
-
-    final response = await http.put(url, body: reservacionToJson(reservacion));
+    final response = await http.get(url);
 
     final decodeData = json.decode(response.body);
 
     print(decodeData);
 
     if (response.statusCode == 200) {
-      return true;
+      return decodeData["message"].toString();
     }
+    return decodeData["errors"].toString();
+  }
 
-    return false;
+  Future<String> cambiarReservacion(Reservacion reservacion) async {
+    final url = "$_url/modificarReservacion";
+
+    final response = await http.post(url, headers: {
+      'Accept': 'application/json'
+    }, body: {
+      "id": "${reservacion.id}",
+      "unidad": "${reservacion.unidad}",
+      "mesa": "${reservacion.mesa}",
+      "usuarioId": "${reservacion.usuarioId}",
+      "fecha": "${reservacion.fecha}",
+      "hora": "${reservacion.hora}",
+      "pax": "${reservacion.pax}",
+    });
+
+    final decodeData = json.decode(response.body);
+
+    //print(decodeData);
+
+    if (response.statusCode == 200) {
+      return decodeData["message"].toString();
+    }
+    return decodeData["errors"].toString();
   }
 
   Future<String> createReservacion(Reservacion reservacion) async {
@@ -165,7 +179,7 @@ class ApiLaravel {
     });
 
     final decodeData = json.decode(response.body);
-    print(decodeData);
+    //print(decodeData);
 
     if (response.statusCode == 200) {
       return decodeData["message"].toString();

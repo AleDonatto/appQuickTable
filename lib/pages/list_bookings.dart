@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:quicktable/models/reservacion_cliente.dart';
 import 'package:quicktable/utils/api_laravel.dart';
 import 'package:quicktable/utils/arguments_booking.dart';
@@ -7,11 +10,14 @@ import 'package:quicktable/widgets/menu.dart';
 
 class MisReservaciones extends StatelessWidget {
   @override
+  final scaffoldKey = new GlobalKey<ScaffoldState>();
+
   final _apiLaravel = new ApiLaravel();
   final _prefs = new PreferenciasUsuario();
 
   Widget build(BuildContext context) {
     return Scaffold(
+      key: scaffoldKey,
       appBar: AppBar(
         title: Text(''),
         backgroundColor: Color.fromRGBO(3, 85, 216, 1),
@@ -59,6 +65,8 @@ class MisReservaciones extends StatelessWidget {
   }
 
   _createReservaciones(BuildContext context, ReservacionCliente reservaciones) {
+    String formattedDate = DateFormat('yyyy-MM-dd').format(reservaciones.bdate);
+
     return Center(
       child: Card(
         elevation: 10.0,
@@ -70,36 +78,20 @@ class MisReservaciones extends StatelessWidget {
             ListTile(
               title: Text(reservaciones.nameUnit),
               subtitle: Text(
-                  'Mesa ${reservaciones.numMesa} Pax: ${reservaciones.pax} Dia: ${reservaciones.bdate} - ${reservaciones.bhour}'),
+                  'Mesa ${reservaciones.numMesa} Pax: ${reservaciones.pax} Dia: $formattedDate - ${reservaciones.bhour}'),
               leading: Icon(Icons.disc_full),
             ),
             Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: <Widget>[
-                FlatButton(
-                  onPressed: () {
-                    Navigator.pushNamed(
-                      context,
-                      "edit_reservacion",
-                      arguments: ArgumentsBooking(reservaciones.pax,
-                          reservaciones.bdate.toString(), reservaciones.bhour),
-                    );
-                  },
-                  child: Text('Editar'),
-                ),
-                FlatButton(
-                  onPressed: () => _showAlertDialog(context),
-                  child: Text('Cancelar'),
-                )
-              ],
-            ),
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: _opciones(
+                    context, int.parse(reservaciones.status), reservaciones)),
           ],
         ),
       ),
     );
   }
 
-  _showAlertDialog(BuildContext context) {
+  _showAlertDialog(BuildContext context, int id) {
     // set up the buttons
     Widget cancelButton = FlatButton(
       child: Text("Cerrar"),
@@ -107,8 +99,16 @@ class MisReservaciones extends StatelessWidget {
     );
     Widget continueButton = FlatButton(
       child: Text("Confirmar"),
-      onPressed: () {
+      onPressed: () async {
+        String response;
+
+        response = await _apiLaravel.cancelarReservacion(id);
         Navigator.of(context).pop();
+        mostrarSnackbar(response);
+
+        Timer _timer = new Timer(const Duration(milliseconds: 5000), () {
+          Navigator.pushReplacementNamed(context, "misreservaciones");
+        });
       },
     );
     // set up the AlertDialog
@@ -127,5 +127,62 @@ class MisReservaciones extends StatelessWidget {
         return alert;
       },
     );
+  }
+
+  _opciones(
+      BuildContext context, int status, ReservacionCliente reservaciones) {
+    if (status == 1) {
+      return <Widget>[
+        FlatButton(
+          onPressed: () {
+            Navigator.pushNamed(
+              context,
+              "edit_reservacion",
+              arguments: ArgumentsBooking(
+                reservaciones.pax,
+                reservaciones.tableId,
+                reservaciones.bdate,
+                reservaciones.bhour,
+                reservaciones.numMesa,
+                reservaciones.businessUnitId,
+                reservaciones.idBooking,
+              ),
+            );
+          },
+          child: Text(
+            'Editar',
+            style: TextStyle(color: Colors.blue),
+          ),
+        ),
+        FlatButton(
+          onPressed: () => _showAlertDialog(context, reservaciones.idBooking),
+          child: Text(
+            'Cancelar',
+            style: TextStyle(color: Colors.blue),
+          ),
+        )
+      ];
+    }
+
+    return <Widget>[
+      FlatButton(
+        onPressed: () {},
+        child: Text(
+          'Reservacion Cancelada',
+          style: TextStyle(color: Colors.red),
+        ),
+      ),
+    ];
+  }
+
+  mostrarSnackbar(String mensaje) {
+    final snackbar = SnackBar(
+      content: Text(
+        mensaje,
+      ),
+      duration: Duration(milliseconds: 5000),
+    );
+
+    scaffoldKey.currentState.showSnackBar(snackbar);
   }
 }
